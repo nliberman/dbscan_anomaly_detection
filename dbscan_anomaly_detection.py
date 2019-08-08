@@ -1,9 +1,4 @@
-import pandas as pd
-import numpy as np
-from sklearn.cluster import DBSCAN
-
-
-def detect_anomalies(data, window, tolerance_multiple):
+def detect_anomalies(data, window=4, tolerance_multiple=3, tolerance_threshold=False):
     anomaly_list = [0]
     try:
         data = list(data)
@@ -16,6 +11,8 @@ def detect_anomalies(data, window, tolerance_multiple):
         raise Exception("window must be an integer greater than 1")
     if (tolerance_multiple <= 0) | (type(tolerance_multiple) not in [int, float]):
         raise Exception("tolerance_multiple must be an integer or float greater than 0")
+    if type(tolerance_threshold) != bool:
+        raise Exception("tolerance_threshold requires a boolean")
         
     if len(data) > 10:
         trim = int(np.ceil(len(data)*.01))
@@ -24,9 +21,11 @@ def detect_anomalies(data, window, tolerance_multiple):
         sd = np.std(data)
         
     eps = sd*tolerance_multiple
-    five_pct = np.mean(data) * 0.05
-    if five_pct > eps:
-        eps = five_pct
+    if tolerance_threshold:
+        five_pct = np.mean(data) * 0.05
+        if five_pct > eps:
+            eps = five_pct
+    print("tolerance_multiple has yielded a tolerance of " + str(eps))
         
     current_window = 1
     max_window = window - 1
@@ -73,8 +72,13 @@ def detect_anomalies(data, window, tolerance_multiple):
         if counter+current_window >= list_len:
             break
             
-    return anomaly_list
-
+    indices = []
+    for enum, i in enumerate(anomaly_list):
+        if i == 1:
+            indices.append(enum)
+        
+    print("anomalous indices: " + str(indices))
+    return indices
 
 def run_dbscan(subset, eps):
     dbscan = DBSCAN(eps=eps, min_samples=1, metric='euclidean')
@@ -83,4 +87,3 @@ def run_dbscan(subset, eps):
         return 1
     else:
         return 0
-
