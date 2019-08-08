@@ -7,6 +7,7 @@
 ## Usage
     from dbscan_anomaly_detection import detect_anomalies
     
+    ## returns a list of index positions deemed to be anomalies
     anomalies = detect_anomalies(data, window, tolerance_multiple, tolerance_threshold)
     
 ## Documentation
